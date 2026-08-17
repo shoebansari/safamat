@@ -1,13 +1,12 @@
-# Render Blueprint — deploy .NET API (connect repo in Render Dashboard → New → Blueprint)
+# Render Blueprint — .NET API via Docker (Render has no native dotnet runtime)
+# Repo: https://github.com/shoebansari/safamat
 services:
   - type: web
     name: matrimonial-admin-api
-    runtime: dotnet
+    runtime: docker
     region: singapore
     plan: free
-    rootDir: backend/Matrimonial.AdminApi
-    buildCommand: dotnet publish -c Release -o out
-    startCommand: dotnet out/Matrimonial.AdminApi.dll
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
