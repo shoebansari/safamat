@@ -1,0 +1,32 @@
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/.vercel/
+
+# Backend
+backend/**/bin/
+backend/**/obj/
+backend/**/.vs/
+backend/**/appsettings.Development.json
+
+# Secrets
+*.user
+*.suo
+.env
+.env.local
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*

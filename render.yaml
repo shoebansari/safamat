@@ -1,0 +1,25 @@
+# Render Blueprint — deploy .NET API (connect repo in Render Dashboard → New → Blueprint)
+services:
+  - type: web
+    name: matrimonial-admin-api
+    runtime: dotnet
+    region: singapore
+    plan: free
+    rootDir: backend/Matrimonial.AdminApi
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: dotnet out/Matrimonial.AdminApi.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: JwtSettings__Secret
+        generateValue: true
+      - key: JwtSettings__Issuer
+        value: MatrimonialAdminApi
+      - key: JwtSettings__Audience
+        value: MatrimonialAdminClient
+      - key: JwtSettings__ExpiryMinutes
+        value: "480"
+      - key: AllowedOrigins__0
+        sync: false
