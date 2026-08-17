@@ -113,11 +113,22 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(context);
 }
 
-if (app.Environment.IsDevelopment())
+var enableSwagger = app.Environment.IsDevelopment() ||
+    builder.Configuration.GetValue("EnableSwagger", false);
+
+if (enableSwagger)
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Matrimonial Admin API v1"));
 }
+
+// Render terminates HTTPS at the edge; avoid redirect issues behind proxy
+if (!app.Environment.IsDevelopment())
+    app.Use((context, next) =>
+    {
+        context.Request.Scheme = "https";
+        return next();
+    });
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");

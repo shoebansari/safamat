@@ -14,8 +14,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Render sets PORT; ASP.NET Core listens on this URL
-ENV ASPNETCORE_URLS=http://+:10000
+# Render injects PORT at runtime (default 10000)
+ENV ASPNETCORE_HTTP_PORTS=10000
 EXPOSE 10000
 
 ENTRYPOINT ["dotnet", "Matrimonial.AdminApi.dll"]

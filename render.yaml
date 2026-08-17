@@ -22,3 +22,5 @@ services:
         value: "480"
       - key: AllowedOrigins__0
         sync: false
+      - key: EnableSwagger
+        value: "true"
