@@ -1,4 +1,4 @@
-export type FieldErrors = Record<string, string>;
+export type FieldErrors = Partial<Record<string, string>>;
 
 export type SetFieldErrors = (value: FieldErrors | ((prev: FieldErrors) => FieldErrors)) => void;
 
