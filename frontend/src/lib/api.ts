@@ -1,7 +1,8 @@
 import { clearAuth, getToken } from "./auth";
+import { getApiUrl } from "./config";
 import type { ApiResponse } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5116";
+const API_URL = getApiUrl();
 
 export class ApiError extends Error {
   status: number;

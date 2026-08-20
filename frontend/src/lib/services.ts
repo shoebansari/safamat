@@ -11,6 +11,7 @@ import type {
   TenantSubscription,
 } from "./types";
 import { api } from "./api";
+import { getApiUrl } from "./config";
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
 
@@ -25,7 +26,7 @@ function buildQuery(params: QueryParams): string {
 
 export const authApi = {
   login: (adminUserName: string, password: string) =>
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5116"}/api/auth/login`, {
+    fetch(`${getApiUrl()}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ adminUserName, password }),
