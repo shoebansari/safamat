@@ -104,13 +104,19 @@ public class TenantService : ITenantService
 
         if (request.CompanyName != null) tenant.CompanyName = request.CompanyName;
         if (request.OwnerName != null) tenant.OwnerName = request.OwnerName;
-        if (request.UserName != null)
+        if (!string.IsNullOrWhiteSpace(request.UserName))
         {
             if (await _context.Tenants.AnyAsync(t => t.TenantId != id && t.UserName.ToLower() == request.UserName.ToLower()))
                 throw new InvalidOperationException("Username already exists.");
-            tenant.UserName = request.UserName;
+            tenant.UserName = request.UserName.Trim();
         }
-        if (request.Password != null) tenant.Password = request.Password;
+        else if (string.IsNullOrWhiteSpace(tenant.UserName))
+            throw new InvalidOperationException("Username is required.");
+
+        if (!string.IsNullOrWhiteSpace(request.Password))
+            tenant.Password = request.Password;
+        else if (string.IsNullOrWhiteSpace(tenant.Password))
+            throw new InvalidOperationException("Password is required.");
         if (request.Email != null) tenant.Email = request.Email;
         if (request.Phone != null) tenant.Phone = request.Phone;
         if (request.Address != null) tenant.Address = request.Address;

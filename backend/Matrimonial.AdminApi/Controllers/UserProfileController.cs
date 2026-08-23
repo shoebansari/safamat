@@ -94,10 +94,8 @@ public class UserProfileController : ControllerBase
     {
         try
         {
-            var webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            Directory.CreateDirectory(webRoot);
             var result = await _service.UploadPhotoAsync(
-                UserContext.GetUserId(User), file, isPrimary, webRoot);
+                UserContext.GetUserId(User), file, isPrimary);
             return Ok(ApiResponse<UserPhotoDto>.Ok(result!, "Photo uploaded."));
         }
         catch (InvalidOperationException ex)

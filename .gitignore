@@ -27,7 +27,9 @@ backend/**/bin/
 backend/**/obj/
 backend/**/.vs/
 backend/**/appsettings.Development.json
+backend/**/appsettings.Production.json
 backend/**/wwwroot/uploads/
+scripts/neon.connection
 
 # Secrets
 *.user

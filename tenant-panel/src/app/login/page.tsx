@@ -64,7 +64,7 @@ export default function LoginPage() {
       <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
         <div className="w-full max-w-md">
           <h2 className="text-2xl font-bold text-slate-900">Tenant sign in</h2>
-          <p className="mt-1 text-slate-500">Use your tenant username and password</p>
+          <p className="mt-1 text-slate-500">Use your tenant username and password (not tenant code)</p>
 
           {error && (
             <div className="mt-4">

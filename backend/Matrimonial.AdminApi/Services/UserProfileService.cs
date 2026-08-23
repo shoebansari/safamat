@@ -17,7 +17,7 @@ public interface IUserProfileService
     Task<UserPreferenceDto?> GetPreferencesAsync(Guid userId);
     Task<UserPreferenceDto?> SavePreferencesAsync(Guid userId, SavePreferenceRequest request);
     Task<UserPhotoDto?> AddPhotoAsync(Guid userId, AddPhotoRequest request);
-    Task<UserPhotoDto?> UploadPhotoAsync(Guid userId, IFormFile file, bool isPrimary, string webRootPath);
+    Task<UserPhotoDto?> UploadPhotoAsync(Guid userId, IFormFile file, bool isPrimary);
     Task<bool> DeletePhotoAsync(Guid userId, Guid photoId);
     Task<UserProfileDto?> GetForTenantReviewAsync(Guid tenantId, Guid userId);
 }
@@ -25,8 +25,13 @@ public interface IUserProfileService
 public class UserProfileService : IUserProfileService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IPhotoStorageService _photoStorage;
 
-    public UserProfileService(ApplicationDbContext context) => _context = context;
+    public UserProfileService(ApplicationDbContext context, IPhotoStorageService photoStorage)
+    {
+        _context = context;
+        _photoStorage = photoStorage;
+    }
 
     public async Task<UserProfileDto?> GetMyProfileAsync(Guid userId) =>
         await LoadProfileAsync(userId, includeUnapprovedPhotos: true);
@@ -217,7 +222,7 @@ public class UserProfileService : IUserProfileService
         return MapPhoto(photo);
     }
 
-    public async Task<UserPhotoDto?> UploadPhotoAsync(Guid userId, IFormFile file, bool isPrimary, string webRootPath)
+    public async Task<UserPhotoDto?> UploadPhotoAsync(Guid userId, IFormFile file, bool isPrimary)
     {
         const long maxBytes = 2 * 1024 * 1024;
         if (file.Length == 0) throw new InvalidOperationException("No file uploaded.");
@@ -231,19 +236,31 @@ public class UserProfileService : IUserProfileService
         if (count >= 3)
             throw new InvalidOperationException("Maximum 3 photos allowed per profile.");
 
-        var folder = Path.Combine(webRootPath, "uploads", "users", userId.ToString());
-        Directory.CreateDirectory(folder);
+        if (isPrimary)
+        {
+            var existing = await _context.UserPhotos.Where(p => p.UserId == userId && p.IsPrimary).ToListAsync();
+            foreach (var p in existing) p.IsPrimary = false;
+        }
 
-        var ext = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(ext)) ext = ".jpg";
-        var fileName = $"{Guid.NewGuid()}{ext}";
-        var fullPath = Path.Combine(folder, fileName);
+        var order = await _context.UserPhotos.CountAsync(p => p.UserId == userId);
+        var photoId = Guid.NewGuid();
+        var stored = await _photoStorage.StoreUserPhotoAsync(photoId, userId, file);
 
-        await using (var stream = new FileStream(fullPath, FileMode.Create))
-            await file.CopyToAsync(stream);
-
-        var url = $"/uploads/users/{userId}/{fileName}";
-        return await AddPhotoAsync(userId, new AddPhotoRequest { PhotoUrl = url, IsPrimary = isPrimary });
+        var photo = new Entities.UserPhoto
+        {
+            PhotoId = photoId,
+            UserId = userId,
+            PhotoUrl = stored.PhotoUrl,
+            ImageData = stored.ImageData,
+            ContentType = stored.ContentType,
+            IsPrimary = isPrimary || order == 0,
+            DisplayOrder = order + 1,
+            IsApproved = false,
+            UploadedOn = DateTime.UtcNow
+        };
+        _context.UserPhotos.Add(photo);
+        await _context.SaveChangesAsync();
+        return MapPhoto(photo);
     }
 
     public async Task<bool> DeletePhotoAsync(Guid userId, Guid photoId)

@@ -10,6 +10,13 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection(CloudinarySettings.SectionName));
+
+var cloudinarySettings = builder.Configuration.GetSection(CloudinarySettings.SectionName).Get<CloudinarySettings>();
+if (cloudinarySettings?.IsConfigured == true)
+    builder.Services.AddSingleton<IPhotoStorageService, CloudinaryPhotoStorageService>();
+else
+    builder.Services.AddSingleton<IPhotoStorageService, DatabasePhotoStorageService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

@@ -227,6 +227,8 @@ public class ApplicationDbContext : DbContext
             entity.ToTable("UserPhotos");
             entity.HasKey(e => e.PhotoId);
             entity.Property(e => e.PhotoUrl).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.ContentType).HasMaxLength(100);
+            entity.Property(e => e.ImageData).HasColumnType("bytea");
             entity.HasOne(e => e.User).WithMany(u => u.Photos).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 

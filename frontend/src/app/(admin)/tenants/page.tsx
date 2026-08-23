@@ -91,13 +91,15 @@ export default function TenantsPage() {
     }
   };
 
+  const passwordRequired = !editing || !editing.userName?.trim() || !editing.password?.trim();
+
   const validate = (): boolean => {
     const e: FieldErrors = {};
     if (!editing) e.tenantCode = validateTenantCode(form.tenantCode);
     e.companyName = validateCompanyName(form.companyName);
     e.ownerName = validateOwnerName(form.ownerName);
     e.userName = validateUserName(form.userName);
-    e.password = validatePassword(form.password, !editing);
+    e.password = validatePassword(form.password, passwordRequired);
     if (form.email) e.email = email(form.email);
     if (form.phone) e.phone = phone(form.phone);
     Object.keys(e).forEach((k) => !e[k] && delete e[k]);
@@ -156,9 +158,11 @@ export default function TenantsPage() {
     setSaving(true);
     try {
       if (editing) {
-        const { tenantCode, ...updateData } = form;
+        const { tenantCode, password, ...updateData } = form;
         void tenantCode;
-        await tenantsApi.update(editing.tenantId, updateData);
+        const payload: Record<string, unknown> = { ...updateData };
+        if (password.trim()) payload.password = password.trim();
+        await tenantsApi.update(editing.tenantId, payload);
       } else {
         await tenantsApi.create(form);
       }
@@ -236,7 +240,7 @@ export default function TenantsPage() {
                     <td className="py-3"><StatusBadge active={item.isActive} /></td>
                     <td className="py-3">
                       <div className="flex gap-2">
-                        <button onClick={() => { setEditing(item); setForm({ tenantCode: item.tenantCode, companyName: item.companyName, ownerName: item.ownerName, userName: item.userName, password: item.password, email: item.email, phone: item.phone || "", address: item.address || "", city: item.city || "", state: item.state || "", country: item.country || "", zipCode: item.zipCode || "", logoUrl: item.logoUrl || "", databaseName: item.databaseName || "", databaseServer: item.databaseServer || "", connectionString: "", isActive: item.isActive }); setErrors({}); setModalOpen(true); }} className="rounded p-1 text-slate-400 hover:text-blue-600"><Edit size={16} /></button>
+                        <button onClick={() => { setEditing(item); setForm({ tenantCode: item.tenantCode, companyName: item.companyName, ownerName: item.ownerName, userName: item.userName, password: "", email: item.email, phone: item.phone || "", address: item.address || "", city: item.city || "", state: item.state || "", country: item.country || "", zipCode: item.zipCode || "", logoUrl: item.logoUrl || "", databaseName: item.databaseName || "", databaseServer: item.databaseServer || "", connectionString: "", isActive: item.isActive }); setErrors({}); setModalOpen(true); }} className="rounded p-1 text-slate-400 hover:text-blue-600"><Edit size={16} /></button>
                         {item.isActive && (
                           <button onClick={() => { setDeleting(item); setDeleteOpen(true); }} className="rounded p-1 text-slate-400 hover:text-amber-600"><Ban size={16} /></button>
                         )}
@@ -275,7 +279,8 @@ export default function TenantsPage() {
               if (!validateUserName(e.target.value)) checkDuplicates(undefined, undefined, e.target.value);
             }}
             maxLength={100} />
-          <Input label="Password" type="text" required={!editing} value={form.password} error={errors.password}
+          <Input label="Password" type="password" required={passwordRequired} value={form.password} error={errors.password}
+            placeholder={editing && editing.password ? "Leave blank to keep current password" : "Min 6 characters"}
             onChange={(e) => updateField("password", e.target.value)} maxLength={100} />
           <Input label="Email" type="email" value={form.email} error={errors.email}
             onChange={(e) => updateField("email", e.target.value)} maxLength={200} />

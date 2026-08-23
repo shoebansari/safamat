@@ -1,14 +1,19 @@
-# Run EF migrations against Neon (set connection string first)
-# Example:
-#   $env:NEON_CONNECTION="Host=xxx.neon.tech;Database=neondb;Username=...;Password=...;SSL Mode=Require;Trust Server Certificate=true"
-#   .\scripts\migrate-neon.ps1
+# Run EF migrations against Neon (connection in scripts/neon.connection — not committed)
+# Or set: $env:NEON_CONNECTION="Host=...;Password=...;SSL Mode=Require;Trust Server Certificate=true"
 
 param(
     [string]$ConnectionString = $env:NEON_CONNECTION
 )
 
 if (-not $ConnectionString) {
-    Write-Error "Set NEON_CONNECTION env var or pass -ConnectionString"
+    $connFile = Join-Path $PSScriptRoot "neon.connection"
+    if (Test-Path $connFile) {
+        $ConnectionString = (Get-Content $connFile -Raw).Trim()
+    }
+}
+
+if (-not $ConnectionString) {
+    Write-Error "Set NEON_CONNECTION, create scripts/neon.connection, or pass -ConnectionString"
     exit 1
 }
 
@@ -19,4 +24,4 @@ Write-Host "Applying migrations to Neon..."
 dotnet ef database update --connection $ConnectionString
 
 Pop-Location
-Write-Host "Done. Restart Render service after this."
+Write-Host "Done. Set the same string in Render as ConnectionStrings__DefaultConnection"
