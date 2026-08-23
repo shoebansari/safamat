@@ -120,7 +120,20 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DbSeeder.SeedAsync(context);
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
+    try
+    {
+        var seedDemo = app.Environment.IsDevelopment() ||
+            builder.Configuration.GetValue("SeedDemoData", false);
+        logger.LogInformation("Running database migration (demo seed: {SeedDemo})", seedDemo);
+        await DbSeeder.SeedAsync(context, seedDemo);
+        logger.LogInformation("Database migration completed.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database migration/seed failed.");
+        throw;
+    }
 }
 
 var enableSwagger = app.Environment.IsDevelopment() ||

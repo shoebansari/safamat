@@ -5,10 +5,14 @@ namespace Matrimonial.AdminApi.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(ApplicationDbContext context, bool includeDemoData = false)
     {
         await context.Database.MigrateAsync();
         await SeedAdminUsersAsync(context);
+
+        if (!includeDemoData)
+            return;
+
         await SeedDemoMembersAsync(context);
         await SeedDemoUsersAsync(context);
         await DbSeederDiscover.SeedBulkDiscoverUsersAsync(context);

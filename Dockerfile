@@ -16,6 +16,7 @@ COPY --from=build /app/publish .
 
 # Render injects PORT at runtime (default 10000)
 ENV ASPNETCORE_HTTP_PORTS=10000
+ENV ASPNETCORE_URLS=http://0.0.0.0:10000
 EXPOSE 10000
 
 ENTRYPOINT ["dotnet", "Matrimonial.AdminApi.dll"]

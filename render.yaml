@@ -18,6 +18,8 @@ services:
         sync: false
       - key: JwtSettings__Secret
         sync: false
+      - key: SeedDemoData
+        value: "false"
       - key: JwtSettings__Issuer
         value: MatrimonialAdminApi
       - key: JwtSettings__Audience

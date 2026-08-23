@@ -1,0 +1,22 @@
+name: Build API
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore and publish API
+        run: dotnet publish backend/Matrimonial.AdminApi/Matrimonial.AdminApi.csproj -c Release -o ./publish
+
+      - name: Docker build (same as Render)
+        run: docker build -t matrimonial-api .
