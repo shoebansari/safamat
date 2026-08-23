@@ -51,7 +51,7 @@ export default function LoginPage() {
         <h2 className="text-4xl font-bold text-white">Your journey to forever starts here</h2>
         <p className="text-sm text-rose-200">© 2026 Matrimonial SaaS</p>
       </div>
-      <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
+      <div className="flex w-full items-center justify-center p-4 sm:p-8 lg:w-1/2">
         <div className="w-full max-w-md">
           <h2 className="text-2xl font-bold text-slate-900">Sign in</h2>
           <p className="mt-1 text-slate-500">Enter your tenant code and credentials</p>

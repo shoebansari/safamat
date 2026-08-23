@@ -81,8 +81,8 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-6">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-lg sm:p-8">
         <div className="mb-6 flex items-center gap-2 text-rose-600">
           <Heart size={24} fill="currentColor" />
           <span className="text-xl font-bold text-slate-900">Create Account</span>

@@ -61,7 +61,7 @@ export default function LoginPage() {
         <p className="text-sm text-rose-200">© 2026 Matrimonial SaaS Platform</p>
       </div>
 
-      <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
+      <div className="flex w-full items-center justify-center p-4 sm:p-8 lg:w-1/2">
         <div className="w-full max-w-md">
           <h2 className="text-2xl font-bold text-slate-900">Tenant sign in</h2>
           <p className="mt-1 text-slate-500">Use your tenant username and password (not tenant code)</p>

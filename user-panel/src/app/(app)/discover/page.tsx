@@ -24,7 +24,7 @@ export default function DiscoverPage() {
   const [draft, setDraft] = useState<DiscoverFilters>(EMPTY_FILTERS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   const load = useCallback(async (activeFilters: DiscoverFilters) => {
     setLoading(true);
@@ -57,7 +57,7 @@ export default function DiscoverPage() {
     <div>
       <PageHeader
         title="Discover"
-        description={`Browse ${items.length} approved profiles · Filter by age, city, religion, language & more`}
+        description={`Browse ${items.length} approved profiles`}
         action={
           <Button variant="secondary" size="sm" onClick={() => setShowFilters((s) => !s)}>
             <Filter size={14} /> {showFilters ? "Hide filters" : "Show filters"}

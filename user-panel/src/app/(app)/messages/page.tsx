@@ -68,9 +68,9 @@ export default function MessagesPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-slate-900">Messages</h1>
+    <div className="flex h-[calc(100dvh-11rem)] flex-col lg:h-[calc(100vh-8rem)]">
+      <div className="mb-3 lg:mb-4">
+        <h1 className="text-xl font-bold text-slate-900 lg:text-2xl">Messages</h1>
         <p className="text-sm text-slate-500">Chat with your matches in real time</p>
       </div>
 
