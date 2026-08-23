@@ -1,5 +1,7 @@
 # Render Blueprint — .NET API via Docker (Render has no native dotnet runtime)
 # Repo: https://github.com/shoebansari/safamat
+# Neon: set ConnectionStrings__DefaultConnection in Render dashboard (PostgreSQL URL)
+# CORS: production allows https://*.vercel.app automatically (see Program.cs)
 services:
   - type: web
     name: matrimonial-admin-api
@@ -7,20 +9,20 @@ services:
     region: singapore
     plan: free
     dockerfilePath: ./Dockerfile
+    branch: main
+    autoDeploy: true
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ConnectionStrings__DefaultConnection
         sync: false
       - key: JwtSettings__Secret
-        generateValue: true
+        sync: false
       - key: JwtSettings__Issuer
         value: MatrimonialAdminApi
       - key: JwtSettings__Audience
         value: MatrimonialAdminClient
       - key: JwtSettings__ExpiryMinutes
         value: "480"
-      - key: AllowedOrigins__0
-        sync: false
       - key: EnableSwagger
         value: "true"

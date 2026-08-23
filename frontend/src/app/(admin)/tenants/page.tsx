@@ -5,7 +5,7 @@ import { Ban, Edit, Plus, Search } from "lucide-react";
 import { tenantsApi } from "@/lib/services";
 import type { Tenant } from "@/lib/types";
 import type { FieldErrors } from "@/lib/validation";
-import { email, hasErrors, maxLength, minLength, patchFieldError, phone, required } from "@/lib/validation";
+import { email, hasErrors, maxLength, minLength, patchFieldError, password, phone, required } from "@/lib/validation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -16,7 +16,7 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { Alert, EmptyState, LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 const emptyForm = {
-  tenantCode: "", companyName: "", ownerName: "", email: "", phone: "",
+  tenantCode: "", companyName: "", ownerName: "", userName: "", password: "", email: "", phone: "",
   address: "", city: "", state: "", country: "", zipCode: "",
   logoUrl: "", databaseName: "", databaseServer: "", connectionString: "", isActive: true,
 };
@@ -63,14 +63,28 @@ export default function TenantsPage() {
   const validateOwnerName = (value: string) =>
     required(value, "Owner name") || maxLength(value, 150, "Owner name");
 
-  const checkDuplicates = async (tenantCode?: string, companyName?: string) => {
+  const validateUserName = (value: string) =>
+    required(value, "Username") || minLength(value, 3, "Username") || maxLength(value, 100, "Username");
+
+  const validatePassword = (value: string, isRequired: boolean) =>
+    password(value, isRequired) || (value ? maxLength(value, 100, "Password") : undefined);
+
+  const checkDuplicates = async (tenantCode?: string, companyName?: string, userName?: string) => {
     try {
-      const result = await tenantsApi.exists(tenantCode, companyName);
+      const result = await tenantsApi.exists(
+        tenantCode,
+        companyName,
+        userName,
+        editing?.tenantId
+      );
       if (tenantCode) {
         patchFieldError(setErrors, "tenantCode", result.tenantCodeExists ? "Tenant code already exists" : undefined);
       }
       if (companyName) {
         patchFieldError(setErrors, "companyName", result.companyNameExists ? "Company name already exists" : undefined);
+      }
+      if (userName) {
+        patchFieldError(setErrors, "userName", result.userNameExists ? "Username already exists" : undefined);
       }
     } catch {
       /* ignore lookup errors */
@@ -82,6 +96,8 @@ export default function TenantsPage() {
     if (!editing) e.tenantCode = validateTenantCode(form.tenantCode);
     e.companyName = validateCompanyName(form.companyName);
     e.ownerName = validateOwnerName(form.ownerName);
+    e.userName = validateUserName(form.userName);
+    e.password = validatePassword(form.password, !editing);
     if (form.email) e.email = email(form.email);
     if (form.phone) e.phone = phone(form.phone);
     Object.keys(e).forEach((k) => !e[k] && delete e[k]);
@@ -100,6 +116,12 @@ export default function TenantsPage() {
     if (key === "ownerName" && typeof value === "string") {
       patchFieldError(setErrors, "ownerName", validateOwnerName(value));
     }
+    if (key === "userName" && typeof value === "string") {
+      patchFieldError(setErrors, "userName", validateUserName(value));
+    }
+    if (key === "password" && typeof value === "string") {
+      patchFieldError(setErrors, "password", validatePassword(value, !editing));
+    }
     if (key === "email" && typeof value === "string") {
       patchFieldError(setErrors, "email", value ? email(value) : undefined);
     }
@@ -111,21 +133,25 @@ export default function TenantsPage() {
   const handleSave = async () => {
     if (!validate()) return;
 
-    if (!editing) {
-      try {
-        const result = await tenantsApi.exists(form.tenantCode.trim(), form.companyName.trim());
-        const dupErrors: FieldErrors = {};
-        if (result.tenantCodeExists) dupErrors.tenantCode = "Tenant code already exists";
-        if (result.companyNameExists) dupErrors.companyName = "Company name already exists";
-        if (Object.keys(dupErrors).length) {
-          setErrors((prev) => ({ ...prev, ...dupErrors }));
-          return;
-        }
-      } catch (err) {
+    try {
+      const result = await tenantsApi.exists(
+        editing ? undefined : form.tenantCode.trim(),
+        form.companyName.trim(),
+        form.userName.trim(),
+        editing?.tenantId
+      );
+      const dupErrors: FieldErrors = {};
+      if (!editing && result.tenantCodeExists) dupErrors.tenantCode = "Tenant code already exists";
+      if (result.companyNameExists) dupErrors.companyName = "Company name already exists";
+      if (result.userNameExists) dupErrors.userName = "Username already exists";
+      if (Object.keys(dupErrors).length) {
+        setErrors((prev) => ({ ...prev, ...dupErrors }));
+        return;
+      }
+    } catch (err) {
         alert(err instanceof Error ? err.message : "Could not verify tenant details");
         return;
       }
-    }
 
     setSaving(true);
     try {
@@ -144,6 +170,8 @@ export default function TenantsPage() {
         patchFieldError(setErrors, "tenantCode", message);
       } else if (message.toLowerCase().includes("company name")) {
         patchFieldError(setErrors, "companyName", message);
+      } else if (message.toLowerCase().includes("username")) {
+        patchFieldError(setErrors, "userName", message);
       } else {
         alert(message);
       }
@@ -191,6 +219,7 @@ export default function TenantsPage() {
                   <th className="pb-3 font-medium">Code</th>
                   <th className="pb-3 font-medium">Company</th>
                   <th className="pb-3 font-medium">Owner</th>
+                  <th className="pb-3 font-medium">Username</th>
                   <th className="pb-3 font-medium">Email</th>
                   <th className="pb-3 font-medium">Status</th>
                   <th className="pb-3 font-medium">Actions</th>
@@ -202,11 +231,12 @@ export default function TenantsPage() {
                     <td className="py-3 font-medium">{item.tenantCode}</td>
                     <td className="py-3">{item.companyName}</td>
                     <td className="py-3">{item.ownerName}</td>
+                    <td className="py-3">{item.userName}</td>
                     <td className="py-3">{item.email}</td>
                     <td className="py-3"><StatusBadge active={item.isActive} /></td>
                     <td className="py-3">
                       <div className="flex gap-2">
-                        <button onClick={() => { setEditing(item); setForm({ tenantCode: item.tenantCode, companyName: item.companyName, ownerName: item.ownerName, email: item.email, phone: item.phone || "", address: item.address || "", city: item.city || "", state: item.state || "", country: item.country || "", zipCode: item.zipCode || "", logoUrl: item.logoUrl || "", databaseName: item.databaseName || "", databaseServer: item.databaseServer || "", connectionString: "", isActive: item.isActive }); setErrors({}); setModalOpen(true); }} className="rounded p-1 text-slate-400 hover:text-blue-600"><Edit size={16} /></button>
+                        <button onClick={() => { setEditing(item); setForm({ tenantCode: item.tenantCode, companyName: item.companyName, ownerName: item.ownerName, userName: item.userName, password: item.password, email: item.email, phone: item.phone || "", address: item.address || "", city: item.city || "", state: item.state || "", country: item.country || "", zipCode: item.zipCode || "", logoUrl: item.logoUrl || "", databaseName: item.databaseName || "", databaseServer: item.databaseServer || "", connectionString: "", isActive: item.isActive }); setErrors({}); setModalOpen(true); }} className="rounded p-1 text-slate-400 hover:text-blue-600"><Edit size={16} /></button>
                         {item.isActive && (
                           <button onClick={() => { setDeleting(item); setDeleteOpen(true); }} className="rounded p-1 text-slate-400 hover:text-amber-600"><Ban size={16} /></button>
                         )}
@@ -239,6 +269,14 @@ export default function TenantsPage() {
             maxLength={200} />
           <Input label="Owner Name" required value={form.ownerName} error={errors.ownerName}
             onChange={(e) => updateField("ownerName", e.target.value)} maxLength={150} />
+          <Input label="Username" required value={form.userName} error={errors.userName}
+            onChange={(e) => updateField("userName", e.target.value)}
+            onBlur={(e) => {
+              if (!validateUserName(e.target.value)) checkDuplicates(undefined, undefined, e.target.value);
+            }}
+            maxLength={100} />
+          <Input label="Password" type="text" required={!editing} value={form.password} error={errors.password}
+            onChange={(e) => updateField("password", e.target.value)} maxLength={100} />
           <Input label="Email" type="email" value={form.email} error={errors.email}
             onChange={(e) => updateField("email", e.target.value)} maxLength={200} />
           <Input label="Phone" value={form.phone} error={errors.phone}

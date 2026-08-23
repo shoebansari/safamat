@@ -30,6 +30,8 @@ export interface Tenant {
   tenantCode: string;
   companyName: string;
   ownerName: string;
+  userName: string;
+  password: string;
   email: string;
   phone?: string;
   address?: string;

@@ -57,9 +57,9 @@ export const tenantsApi = {
   create: (data: Record<string, unknown>) => api.post<Tenant>("/api/tenants", data),
   update: (id: string, data: Record<string, unknown>) => api.put<Tenant>(`/api/tenants/${id}`, data),
   delete: (id: string) => api.delete<object>(`/api/tenants/${id}`),
-  exists: (tenantCode?: string, companyName?: string) =>
-    api.get<{ tenantCodeExists: boolean; companyNameExists: boolean }>(
-      `/api/tenants/exists${buildQuery({ tenantCode, companyName })}`
+  exists: (tenantCode?: string, companyName?: string, userName?: string, excludeTenantId?: string) =>
+    api.get<{ tenantCodeExists: boolean; companyNameExists: boolean; userNameExists: boolean }>(
+      `/api/tenants/exists${buildQuery({ tenantCode, companyName, userName, excludeTenantId })}`
     ),
 };
 

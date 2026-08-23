@@ -22,6 +22,16 @@ builder.Services.AddScoped<ITenantSubscriptionService, TenantSubscriptionService
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<ISystemSettingService, SystemSettingService>();
+builder.Services.AddScoped<ITenantAuthService, TenantAuthService>();
+builder.Services.AddScoped<ITenantMemberPlanService, TenantMemberPlanService>();
+builder.Services.AddScoped<ITenantMemberService, TenantMemberService>();
+builder.Services.AddScoped<IUserAuthService, UserAuthService>();
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddScoped<IUserSocialService, UserSocialService>();
+builder.Services.AddScoped<IUserMessageService, UserMessageService>();
+builder.Services.AddScoped<IUserSubscriptionService, UserSubscriptionService>();
+builder.Services.AddScoped<IUserNotificationService, UserNotificationService>();
+builder.Services.AddScoped<ITenantUserService, TenantUserService>();
 
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -131,6 +141,7 @@ if (!app.Environment.IsDevelopment())
     });
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();

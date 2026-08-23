@@ -8,11 +8,26 @@ frontend/.env.local
 frontend/.env.*.local
 frontend/.vercel/
 
+tenant-panel/node_modules/
+tenant-panel/.next/
+tenant-panel/out/
+tenant-panel/.env.local
+tenant-panel/.env.*.local
+tenant-panel/.vercel/
+
+user-panel/node_modules/
+user-panel/.next/
+user-panel/out/
+user-panel/.env.local
+user-panel/.env.*.local
+user-panel/.vercel/
+
 # Backend
 backend/**/bin/
 backend/**/obj/
 backend/**/.vs/
 backend/**/appsettings.Development.json
+backend/**/wwwroot/uploads/
 
 # Secrets
 *.user

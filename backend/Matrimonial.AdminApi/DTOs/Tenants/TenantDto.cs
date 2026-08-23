@@ -6,6 +6,8 @@ public class TenantDto
     public string TenantCode { get; set; } = string.Empty;
     public string CompanyName { get; set; } = string.Empty;
     public string OwnerName { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public string? Address { get; set; }
@@ -27,6 +29,8 @@ public class CreateTenantRequest
     public string TenantCode { get; set; } = string.Empty;
     public string CompanyName { get; set; } = string.Empty;
     public string OwnerName { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public string? Address { get; set; }
@@ -45,6 +49,8 @@ public class UpdateTenantRequest
 {
     public string? CompanyName { get; set; }
     public string? OwnerName { get; set; }
+    public string? UserName { get; set; }
+    public string? Password { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Address { get; set; }

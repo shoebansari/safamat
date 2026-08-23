@@ -27,10 +27,17 @@ public class TenantsController : ControllerBase
 
     [HttpGet("exists")]
     public async Task<ActionResult<ApiResponse<object>>> Exists(
-        [FromQuery] string? tenantCode = null, [FromQuery] string? companyName = null)
+        [FromQuery] string? tenantCode = null, [FromQuery] string? companyName = null,
+        [FromQuery] string? userName = null, [FromQuery] Guid? excludeTenantId = null)
     {
-        var (codeExists, nameExists) = await _service.ExistsAsync(tenantCode, companyName);
-        return Ok(ApiResponse<object>.Ok(new { tenantCodeExists = codeExists, companyNameExists = nameExists }));
+        var (codeExists, nameExists, userNameExists) =
+            await _service.ExistsAsync(tenantCode, companyName, userName, excludeTenantId);
+        return Ok(ApiResponse<object>.Ok(new
+        {
+            tenantCodeExists = codeExists,
+            companyNameExists = nameExists,
+            userNameExists = userNameExists
+        }));
     }
 
     [HttpGet("{id:guid}")]
@@ -59,9 +66,16 @@ public class TenantsController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<ApiResponse<TenantDto>>> Update(Guid id, [FromBody] UpdateTenantRequest request)
     {
-        var result = await _service.UpdateAsync(id, request);
-        if (result == null) return NotFound(ApiResponse<TenantDto>.Fail("Tenant not found."));
-        return Ok(ApiResponse<TenantDto>.Ok(result, "Tenant updated."));
+        try
+        {
+            var result = await _service.UpdateAsync(id, request);
+            if (result == null) return NotFound(ApiResponse<TenantDto>.Fail("Tenant not found."));
+            return Ok(ApiResponse<TenantDto>.Ok(result, "Tenant updated."));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<TenantDto>.Fail(ex.Message));
+        }
     }
 
     [HttpDelete("{id:guid}")]

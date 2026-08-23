@@ -13,7 +13,8 @@ public interface ITenantService
     Task<TenantDto> CreateAsync(CreateTenantRequest request, Guid adminId);
     Task<TenantDto?> UpdateAsync(Guid id, UpdateTenantRequest request);
     Task<bool> DeleteAsync(Guid id);
-    Task<(bool TenantCodeExists, bool CompanyNameExists)> ExistsAsync(string? tenantCode, string? companyName);
+    Task<(bool TenantCodeExists, bool CompanyNameExists, bool UserNameExists)> ExistsAsync(
+        string? tenantCode, string? companyName, string? userName, Guid? excludeTenantId = null);
 }
 
 public class TenantService : ITenantService
@@ -32,6 +33,7 @@ public class TenantService : ITenantService
                 t.TenantCode.Contains(search) ||
                 t.CompanyName.Contains(search) ||
                 t.OwnerName.Contains(search) ||
+                t.UserName.Contains(search) ||
                 t.Email.Contains(search));
         }
 
@@ -63,12 +65,17 @@ public class TenantService : ITenantService
         if (await _context.Tenants.AnyAsync(t => t.CompanyName.ToLower() == request.CompanyName.ToLower()))
             throw new InvalidOperationException("Company name already exists.");
 
+        if (await _context.Tenants.AnyAsync(t => t.UserName.ToLower() == request.UserName.ToLower()))
+            throw new InvalidOperationException("Username already exists.");
+
         var tenant = new Tenant
         {
             TenantId = Guid.NewGuid(),
             TenantCode = request.TenantCode,
             CompanyName = request.CompanyName,
             OwnerName = request.OwnerName,
+            UserName = request.UserName,
+            Password = request.Password,
             Email = request.Email,
             Phone = request.Phone,
             Address = request.Address,
@@ -97,6 +104,13 @@ public class TenantService : ITenantService
 
         if (request.CompanyName != null) tenant.CompanyName = request.CompanyName;
         if (request.OwnerName != null) tenant.OwnerName = request.OwnerName;
+        if (request.UserName != null)
+        {
+            if (await _context.Tenants.AnyAsync(t => t.TenantId != id && t.UserName.ToLower() == request.UserName.ToLower()))
+                throw new InvalidOperationException("Username already exists.");
+            tenant.UserName = request.UserName;
+        }
+        if (request.Password != null) tenant.Password = request.Password;
         if (request.Email != null) tenant.Email = request.Email;
         if (request.Phone != null) tenant.Phone = request.Phone;
         if (request.Address != null) tenant.Address = request.Address;
@@ -115,13 +129,20 @@ public class TenantService : ITenantService
         return MapToDto(tenant);
     }
 
-    public async Task<(bool TenantCodeExists, bool CompanyNameExists)> ExistsAsync(string? tenantCode, string? companyName)
+    public async Task<(bool TenantCodeExists, bool CompanyNameExists, bool UserNameExists)> ExistsAsync(
+        string? tenantCode, string? companyName, string? userName, Guid? excludeTenantId = null)
     {
+        var query = _context.Tenants.AsQueryable();
+        if (excludeTenantId.HasValue)
+            query = query.Where(t => t.TenantId != excludeTenantId.Value);
+
         var codeExists = !string.IsNullOrWhiteSpace(tenantCode) &&
-            await _context.Tenants.AnyAsync(t => t.TenantCode.ToLower() == tenantCode.ToLower());
+            await query.AnyAsync(t => t.TenantCode.ToLower() == tenantCode.ToLower());
         var nameExists = !string.IsNullOrWhiteSpace(companyName) &&
-            await _context.Tenants.AnyAsync(t => t.CompanyName.ToLower() == companyName.ToLower());
-        return (codeExists, nameExists);
+            await query.AnyAsync(t => t.CompanyName.ToLower() == companyName.ToLower());
+        var userNameExists = !string.IsNullOrWhiteSpace(userName) &&
+            await query.AnyAsync(t => t.UserName.ToLower() == userName.ToLower());
+        return (codeExists, nameExists, userNameExists);
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -141,6 +162,8 @@ public class TenantService : ITenantService
         TenantCode = t.TenantCode,
         CompanyName = t.CompanyName,
         OwnerName = t.OwnerName,
+        UserName = t.UserName,
+        Password = t.Password,
         Email = t.Email,
         Phone = t.Phone,
         Address = t.Address,
